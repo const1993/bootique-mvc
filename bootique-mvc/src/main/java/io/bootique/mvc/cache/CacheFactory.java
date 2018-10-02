@@ -17,30 +17,29 @@
  * under the License.
  */
 
-package io.bootique.mvc.mustache;
+package io.bootique.mvc.cache;
 
-import com.google.inject.Binder;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import io.bootique.ConfigModule;
-import io.bootique.mvc.MvcModule;
-import io.bootique.mvc.cache.ViewCache;
+import io.bootique.annotation.BQConfig;
+import io.bootique.annotation.BQConfigProperty;
 
-import java.util.Optional;
+import java.time.Duration;
 
-public class MvcMustacheModule extends ConfigModule {
+@BQConfig
+public class CacheFactory {
 
-	@Override
-	public void configure(Binder binder) {
-		MvcModule.extend(binder).setRenderer(".mustache", MustacheTemplateRenderer.class);
-	}
+    private Duration period;
 
-    /**
-     * @since 1.0
-     */
-    @Singleton
-    @Provides
-    MustacheTemplateRenderer createTemplateRenderer(Optional<ViewCache> viewCache) {
-        return viewCache.map(MustacheTemplateRenderer::new).orElseGet(MustacheTemplateRenderer::new);
+    public Duration getPeriod() {
+        return period;
     }
+
+    @BQConfigProperty
+    public void setPeriod(Duration period) {
+        this.period = period;
+    }
+
+    public ViewCache creacteCache() {
+        return new ViewCache(period);
+    }
+
 }

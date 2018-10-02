@@ -20,6 +20,7 @@
 package io.bootique.mvc.resolver;
 
 import io.bootique.mvc.Template;
+import io.bootique.mvc.cache.ViewCache;
 import io.bootique.resource.FolderResourceFactory;
 
 import java.net.URL;
@@ -30,10 +31,17 @@ public class DefaultTemplateResolver implements TemplateResolver {
 
     private Charset templateEncoding;
     private FolderResourceFactory templateBase;
+    private ViewCache cache;
 
     public DefaultTemplateResolver(FolderResourceFactory templateBase, Charset templateEncoding) {
+        this(templateBase, templateEncoding, null);
+
+    }
+
+    public DefaultTemplateResolver(FolderResourceFactory templateBase, Charset templateEncoding, ViewCache cache) {
         this.templateBase = templateBase;
         this.templateEncoding = Objects.requireNonNull(templateEncoding, "Null templateEncoding");
+        this.cache = cache;
     }
 
     @Override

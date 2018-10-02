@@ -21,6 +21,7 @@ package io.bootique.mvc.resolver;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.mvc.cache.CacheFactory;
 import io.bootique.resource.FolderResourceFactory;
 
 import java.nio.charset.Charset;

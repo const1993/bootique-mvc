@@ -17,30 +17,19 @@
  * under the License.
  */
 
-package io.bootique.mvc.mustache;
+package io.bootique.mvc.cache;
 
-import com.google.inject.Binder;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import io.bootique.ConfigModule;
-import io.bootique.mvc.MvcModule;
-import io.bootique.mvc.cache.ViewCache;
+public interface Cache {
 
-import java.util.Optional;
+    void add(String key, Object value, long periodInMillis);
 
-public class MvcMustacheModule extends ConfigModule {
+    void remove(String key);
 
-	@Override
-	public void configure(Binder binder) {
-		MvcModule.extend(binder).setRenderer(".mustache", MustacheTemplateRenderer.class);
-	}
+    Object get(String key);
 
-    /**
-     * @since 1.0
-     */
-    @Singleton
-    @Provides
-    MustacheTemplateRenderer createTemplateRenderer(Optional<ViewCache> viewCache) {
-        return viewCache.map(MustacheTemplateRenderer::new).orElseGet(MustacheTemplateRenderer::new);
-    }
+    void clear();
+
+    boolean contains(String key);
+
+    long size();
 }

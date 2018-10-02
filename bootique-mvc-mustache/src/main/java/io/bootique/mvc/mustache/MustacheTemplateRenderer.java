@@ -27,22 +27,34 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import io.bootique.mvc.Template;
+import io.bootique.mvc.cache.ViewCache;
 import io.bootique.mvc.renderer.TemplateRenderer;
 
 public class MustacheTemplateRenderer implements TemplateRenderer {
 
 	private MustacheFactory mustacheFactory;
+	private ViewCache cache;
 
 	public MustacheTemplateRenderer() {
+		this(null);
+	}
+
+	public MustacheTemplateRenderer(ViewCache cache) {
 		this.mustacheFactory = new DefaultMustacheFactory();
+		this.cache = cache;
 	}
 
 	@Override
 	public void render(Writer out, Template template, Object rootModel) throws IOException {
 
-		// TODO: cache templates...
+		Mustache mustache;
+		if (cache != null) {
+			mustache = cache.contains(template.getName()) ? (Mustache) cache.get(template.getName()) : compile(template);
+			cache.add(template.getName(), mustache);
+		} else {
+			mustache = compile(template);
+		}
 
-		Mustache mustache = compile(template);
 		mustache.execute(out, rootModel).flush();
 	}
 

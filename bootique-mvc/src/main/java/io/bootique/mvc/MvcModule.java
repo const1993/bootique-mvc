@@ -22,9 +22,12 @@ package io.bootique.mvc;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.OptionalBinder;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.jersey.JerseyModule;
+import io.bootique.mvc.cache.CacheFactory;
+import io.bootique.mvc.cache.ViewCache;
 import io.bootique.mvc.renderer.ByExtensionTemplateRendererFactory;
 import io.bootique.mvc.renderer.TemplateRenderer;
 import io.bootique.mvc.renderer.TemplateRendererFactory;
@@ -32,6 +35,7 @@ import io.bootique.mvc.resolver.TemplateResolver;
 import io.bootique.mvc.resolver.TemplateResolverFactory;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 public class MvcModule extends ConfigModule {
 
@@ -51,6 +55,7 @@ public class MvcModule extends ConfigModule {
     public void configure(Binder binder) {
         JerseyModule.extend(binder).addFeature(MvcFeature.class);
         MvcModule.extend(binder).initAllExtensions();
+        OptionalBinder.newOptionalBinder(binder, ViewCache.class);
     }
 
     @Singleton
@@ -69,5 +74,11 @@ public class MvcModule extends ConfigModule {
     @Provides
     TemplateResolver createTemplateResolver(ConfigurationFactory configurationFactory) {
         return configurationFactory.config(TemplateResolverFactory.class, configPrefix).createResolver();
+    }
+
+    @Singleton
+    @Provides
+    ViewCache createCache(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(CacheFactory.class, configPrefix).creacteCache();
     }
 }
