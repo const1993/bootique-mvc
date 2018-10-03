@@ -22,18 +22,19 @@ package io.bootique.mvc.mustache;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.ExecutorService;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
+import com.github.mustachejava.util.LatchedWriter;
 import io.bootique.mvc.Template;
 import io.bootique.mvc.cache.ViewCache;
 import io.bootique.mvc.renderer.TemplateRenderer;
 
 public class MustacheTemplateRenderer implements TemplateRenderer {
 
-	private MustacheFactory mustacheFactory;
 	private ViewCache cache;
+	private DefaultMustacheFactory mustacheFactory;
 
 	public MustacheTemplateRenderer() {
 		this(null);
@@ -43,6 +44,14 @@ public class MustacheTemplateRenderer implements TemplateRenderer {
 		this.mustacheFactory = new DefaultMustacheFactory();
 		this.cache = cache;
 	}
+
+	/**
+	 * @since 1.0
+	 */
+	public MustacheTemplateRenderer(ExecutorService executorService) {
+	    this();
+	    this.mustacheFactory.setExecutorService(executorService);
+    }
 
 	@Override
 	public void render(Writer out, Template template, Object rootModel) throws IOException {
@@ -55,6 +64,12 @@ public class MustacheTemplateRenderer implements TemplateRenderer {
 			mustache = compile(template);
 		}
 
+		Mustache mustache = compile(template);
+        Writer execute = mustache.execute(out, rootModel);
+        if (execute instanceof LatchedWriter) {
+            ((LatchedWriter) execute).await();
+        }
+        execute.flush();
 		mustache.execute(out, rootModel).flush();
 	}
 
