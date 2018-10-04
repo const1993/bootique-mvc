@@ -1,24 +1,7 @@
-/*
- * Licensed to ObjectStyle LLC under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ObjectStyle LLC licenses
- * this file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package io.bootique.mvc.mustache;
 
+import com.github.mustachejava.Mustache;
+import io.bootique.jcache.JCacheModule;
 import io.bootique.jersey.JerseyModule;
 import io.bootique.mvc.mustache.view.ConcreteView;
 import io.bootique.test.junit.BQTestFactory;
@@ -26,6 +9,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import javax.cache.configuration.Configuration;
+import javax.cache.configuration.Factory;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.ExpiryPolicy;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -33,12 +22,11 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-public class MvcMustacheModuleIT {
-
+public class MvcMustacheJcacheIT {
     @ClassRule
     public static BQTestFactory TEST_SERVER = new BQTestFactory();
 
@@ -47,14 +35,24 @@ public class MvcMustacheModuleIT {
         TEST_SERVER.app()
                 .args("--config=classpath:MvcMustacheModuleIT.yml", "-s")
                 .module(new MvcMustacheModuleProvider())
-                .module(binder -> JerseyModule.extend(binder).addResource(Api.class)).run();
+                .modules(new JCacheModule())
+                .module(binder -> {
+                    JerseyModule.extend(binder).addResource(MvcMustacheModuleIT.Api.class);
+
+                    Factory<ExpiryPolicy> _100ms = CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.MILLISECONDS, 100));
+
+                    Configuration<String, Mustache> boundConfig = new MutableConfiguration<String, Mustache>()
+                            .setTypes(String.class, Mustache.class)
+                            .setExpiryPolicyFactory(_100ms);
+                    JCacheModule.extend(binder).setConfiguration("mustacheMvc", boundConfig);
+                }).run();
     }
 
     @Test
     public void testV1() {
         WebTarget base = ClientBuilder.newClient().target("http://localhost:8080");
         Response r1 = base.path("/v1").request().get();
-        assertEquals(Status.OK.getStatusCode(), r1.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), r1.getStatus());
         assertEquals("\nv1_string_p1_number_564", r1.readEntity(String.class));
     }
 
@@ -62,7 +60,7 @@ public class MvcMustacheModuleIT {
     public void testV2() {
         WebTarget base = ClientBuilder.newClient().target("http://localhost:8080");
         Response r1 = base.path("/v2").request().get();
-        assertEquals(Status.OK.getStatusCode(), r1.getStatus());
+        assertEquals(Response.Status.OK.getStatusCode(), r1.getStatus());
         assertEquals("\nv2_string_p2_number_5649", r1.readEntity(String.class));
     }
 
@@ -73,7 +71,7 @@ public class MvcMustacheModuleIT {
         @GET
         @Path("/v1")
         public ConcreteView getV1() {
-            Model m = new Model();
+            MvcMustacheModuleIT.Model m = new MvcMustacheModuleIT.Model();
             m.setProp1("p1");
             m.setProp2(564);
             return new ConcreteView("MvcMustacheModuleIT_v1.mustache", m);
@@ -82,7 +80,7 @@ public class MvcMustacheModuleIT {
         @GET
         @Path("/v2")
         public ConcreteView getV2() {
-            Model m = new Model();
+            MvcMustacheModuleIT.Model m = new MvcMustacheModuleIT.Model();
             m.setProp1("p2");
             m.setProp2(5649);
             return new ConcreteView("MvcMustacheModuleIT_v2.mustache", m);

@@ -29,9 +29,18 @@ import com.github.mustachejava.MustacheFactory;
 import io.bootique.mvc.Template;
 import io.bootique.mvc.renderer.TemplateRenderer;
 
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+
 public class MustacheTemplateRenderer implements TemplateRenderer {
 
 	private MustacheFactory mustacheFactory;
+	private CacheManager cacheManager;
+
+	public MustacheTemplateRenderer(CacheManager cacheManager) {
+		this();
+		this.cacheManager = cacheManager;
+	}
 
 	public MustacheTemplateRenderer() {
 		this.mustacheFactory = new DefaultMustacheFactory();
@@ -40,9 +49,15 @@ public class MustacheTemplateRenderer implements TemplateRenderer {
 	@Override
 	public void render(Writer out, Template template, Object rootModel) throws IOException {
 
-		// TODO: cache templates...
+		Cache<String, Mustache> cache = cacheManager != null ? cacheManager.getCache("mustacheMvc") : null;
 
-		Mustache mustache = compile(template);
+		Mustache mustache;
+		if (cache != null && cache.containsKey(template.getName())) {
+			mustache = cache.get(template.getName());
+		} else {
+		 	mustache = compile(template);
+		}
+
 		mustache.execute(out, rootModel).flush();
 	}
 

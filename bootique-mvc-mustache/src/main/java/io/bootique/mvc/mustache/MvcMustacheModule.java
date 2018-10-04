@@ -20,14 +20,26 @@
 package io.bootique.mvc.mustache;
 
 import com.google.inject.Binder;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.OptionalBinder;
 import io.bootique.ConfigModule;
 import io.bootique.mvc.MvcModule;
+
+import javax.cache.CacheManager;
+import java.util.Optional;
 
 public class MvcMustacheModule extends ConfigModule {
 
 	@Override
 	public void configure(Binder binder) {
 		MvcModule.extend(binder).setRenderer(".mustache", MustacheTemplateRenderer.class);
+        OptionalBinder.newOptionalBinder(binder, CacheManager.class);
 	}
 
+    @Singleton
+	@Provides
+    MustacheTemplateRenderer createsMustacheTemplateRenderer(Optional<CacheManager> cache) {
+        return cache.map(MustacheTemplateRenderer::new).orElseGet(MustacheTemplateRenderer::new);
+    }
 }

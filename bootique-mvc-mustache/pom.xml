@@ -31,6 +31,11 @@
 	<name>bootique-mvc-mustache: Bootique MVC implementation based on Mustache.</name>
 	<description>Provides Mustache integration as a template engine for Bootique MVC.</description>
 
+	<properties>
+		<ehcache.version>3.5.2</ehcache.version>
+		<jcache.version>1.1.0</jcache.version>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -62,6 +67,26 @@
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
 			<scope>compile</scope>
+		</dependency>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+			<version>1.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>3.5.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Test scope -->
+		<dependency>
+			<groupId>io.bootique.jcache</groupId>
+			<artifactId>bootique-jcache</artifactId>
+			<version>1.0.RC1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<!-- Optional profile used to sign artifacts -->
