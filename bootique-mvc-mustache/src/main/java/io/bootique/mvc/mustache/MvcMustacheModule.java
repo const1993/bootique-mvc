@@ -27,8 +27,10 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import io.bootique.ConfigModule;
 import io.bootique.mvc.MvcModule;
+import io.bootique.mvc.cache.Cache;
 import io.bootique.mvc.cache.ViewCache;
 
+import java.time.temporal.ValueRange;
 import java.util.Optional;
 
 import java.util.Optional;
@@ -42,6 +44,7 @@ public class MvcMustacheModule extends ConfigModule {
 	public void configure(Binder binder) {
 		MvcModule.extend(binder).setRenderer(".mustache", MustacheTemplateRenderer.class);
 		OptionalBinder.newOptionalBinder(binder, ExecutorService.class);
+		OptionalBinder.newOptionalBinder(binder, Cache.class);
 	}
 
     /**
@@ -49,7 +52,9 @@ public class MvcMustacheModule extends ConfigModule {
      */
 	@Singleton
 	@Provides
-	MustacheTemplateRenderer createTemplateRenderer(Optional<ExecutorService> executorService) {
-		return executorService.map(MustacheTemplateRenderer::new).orElseGet(MustacheTemplateRenderer::new);
+	MustacheTemplateRenderer createTemplateRenderer(Optional<ExecutorService> executorService, Optional<ViewCache> cache) {
+		MustacheTemplateRenderer mustacheTemplateRenderer = executorService.map(MustacheTemplateRenderer::new).orElseGet(MustacheTemplateRenderer::new);
+		cache.ifPresent(mustacheTemplateRenderer::setCache);
+		return mustacheTemplateRenderer;
 	}
 }

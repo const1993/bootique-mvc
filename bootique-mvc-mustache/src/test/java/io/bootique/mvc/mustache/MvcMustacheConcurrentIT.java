@@ -50,6 +50,10 @@ public class MvcMustacheConcurrentIT {
         Response r1 = base.path("/v2").request().get();
         assertEquals(Response.Status.OK.getStatusCode(), r1.getStatus());
         assertEquals("\nv2_string_p2_number_5649", r1.readEntity(String.class));
+        Response r2 = base.path("/v2").request().get();
+        assertEquals(Response.Status.OK.getStatusCode(), r2.getStatus());
+        assertEquals("\nv2_string_p2_number_5649", r2.readEntity(String.class));
+
     }
 
 
@@ -72,6 +76,15 @@ public class MvcMustacheConcurrentIT {
             Model2 m = new Model2();
             m.setProp1("p2");
             m.setProp2(5649);
+            return new ConcreteView("MvcMustacheModuleIT_v2.mustache", m);
+        }
+
+        @GET
+        @Path("/v3")
+        public ConcreteView getV3() {
+            Model2 m = new Model2();
+            m.setProp1("p2");
+            m.setProp2(5648);
             return new ConcreteView("MvcMustacheModuleIT_v2.mustache", m);
         }
 

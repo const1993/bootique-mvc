@@ -15,5 +15,3 @@
 
 mvc:
   templateBase: "classpath:"
-
-cache: 112ms

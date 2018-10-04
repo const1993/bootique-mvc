@@ -37,19 +37,14 @@ public class MustacheTemplateRenderer implements TemplateRenderer {
 	private DefaultMustacheFactory mustacheFactory;
 
 	public MustacheTemplateRenderer() {
-		this(null);
-	}
-
-	public MustacheTemplateRenderer(ViewCache cache) {
 		this.mustacheFactory = new DefaultMustacheFactory();
-		this.cache = cache;
 	}
 
 	/**
 	 * @since 1.0
 	 */
 	public MustacheTemplateRenderer(ExecutorService executorService) {
-	    this();
+		this();
 	    this.mustacheFactory.setExecutorService(executorService);
     }
 
@@ -58,24 +53,29 @@ public class MustacheTemplateRenderer implements TemplateRenderer {
 
 		Mustache mustache;
 		if (cache != null) {
-			mustache = cache.contains(template.getName()) ? (Mustache) cache.get(template.getName()) : compile(template);
+			mustache = (Mustache) cache.get(template.getName());
+			if (mustache == null) {
+				mustache = compile(template);
+			}
 			cache.add(template.getName(), mustache);
 		} else {
 			mustache = compile(template);
 		}
 
-		Mustache mustache = compile(template);
         Writer execute = mustache.execute(out, rootModel);
         if (execute instanceof LatchedWriter) {
             ((LatchedWriter) execute).await();
         }
         execute.flush();
-		mustache.execute(out, rootModel).flush();
 	}
 
 	Mustache compile(Template template) {
 		// presumably Mustache closes the reader on its own...
 		Reader reader = template.reader();
 		return mustacheFactory.compile(reader, template.getName());
+	}
+
+	public void setCache(ViewCache cache) {
+		this.cache = cache;
 	}
 }

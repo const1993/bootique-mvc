@@ -1,9 +1,9 @@
 package io.bootique.mvc.cache;
 
 import com.google.common.primitives.Longs;
+import io.bootique.value.Duration;
 
 import java.lang.ref.SoftReference;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
@@ -20,7 +20,7 @@ public class ViewCache implements Cache {
     }
 
     public void add(String key, Object value) {
-        add(key, value, period.toMillis());
+        add(key, value, period.getDuration().toMillis());
     }
 
     private final ConcurrentHashMap<String, SoftReference<Object>> cache = new ConcurrentHashMap<>();

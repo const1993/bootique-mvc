@@ -22,6 +22,7 @@ package io.bootique.mvc.resolver;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.mvc.cache.CacheFactory;
+import io.bootique.mvc.cache.ViewCache;
 import io.bootique.resource.FolderResourceFactory;
 
 import java.nio.charset.Charset;
@@ -32,6 +33,7 @@ public class TemplateResolverFactory {
 
     private FolderResourceFactory templateBase;
     private Charset templateEncoding;
+    private CacheFactory cache;
 
     public TemplateResolverFactory() {
         this.templateBase = new FolderResourceFactory("");
@@ -69,5 +71,14 @@ public class TemplateResolverFactory {
 
     public DefaultTemplateResolver createResolver() {
         return new DefaultTemplateResolver(templateBase, templateEncoding);
+    }
+
+    public CacheFactory getCache() {
+        return cache;
+    }
+
+    @BQConfigProperty
+    public void setCache(CacheFactory cache) {
+        this.cache = cache;
     }
 }

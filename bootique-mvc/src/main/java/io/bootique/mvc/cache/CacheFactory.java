@@ -21,8 +21,8 @@ package io.bootique.mvc.cache;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.value.Duration;
 
-import java.time.Duration;
 
 @BQConfig
 public class CacheFactory {

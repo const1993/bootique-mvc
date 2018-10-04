@@ -72,13 +72,20 @@ public class MvcModule extends ConfigModule {
 
     @Singleton
     @Provides
-    TemplateResolver createTemplateResolver(ConfigurationFactory configurationFactory) {
-        return configurationFactory.config(TemplateResolverFactory.class, configPrefix).createResolver();
+    TemplateResolver createTemplateResolver(TemplateResolverFactory templateResolverFactory) {
+        return templateResolverFactory.createResolver();
     }
 
     @Singleton
     @Provides
-    ViewCache createCache(ConfigurationFactory configurationFactory) {
-        return configurationFactory.config(CacheFactory.class, configPrefix).creacteCache();
+    TemplateResolverFactory createTemplateResolverFactory(ConfigurationFactory configurationFactory) {
+        return configurationFactory.config(TemplateResolverFactory.class, configPrefix);
+    }
+
+    @Singleton
+    @Provides
+    ViewCache createCache(TemplateResolverFactory templateResolver) {
+        CacheFactory cacheFactory = templateResolver.getCache();
+        return cacheFactory != null ? cacheFactory.creacteCache() : null;
     }
 }
